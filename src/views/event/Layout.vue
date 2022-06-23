@@ -1,6 +1,6 @@
 <template>
-  <div v-if="event">
-    <h1>{{ event.title }}</h1>
+  <div v-if="GStore.event">
+    <h1>{{ GStore.event.title }}</h1>
     <div id="nav">
       <router-link :to="{ name: 'EventDetails', params: { id } }"
         >Details
@@ -12,36 +12,38 @@
         >Edit
       </router-link>
     </div>
-    <router-view :event="event"></router-view>
+    <router-view :event="GStore.event"></router-view>
   </div>
 </template>
 
 <script>
-import EventService from '@/services/EventService.js'
+// import EventService from '@/services/EventService.js'
 export default {
   props: ['id'],
-  data() {
-    return {
-      event: null
-    }
-  },
-  created() {
-    EventService.getEvent(this.id)
-      .then(response => {
-        this.event = response.data
-      })
-      .catch(error => {
-        console.log(error)
-
-        if (error.response && error.response.status == 404) {
-          this.$router.push({
-            name: '404Resource',
-            params: { resource: 'event' }
-          })
-        } else {
-          this.$router.push({ name: 'NetworkError' })
-        }
-      })
-  }
+  inject: ['GStore']
+  // data() {
+  //   return {
+  //     event: null
+  //   }
+  // },
+  // beforeRouteEnter(routeTo, routeFrom, next) {
+  //   return EventService.getEvent(parseInt(routeTo.params.id))
+  //     .then(response => {
+  //       next(comp => {
+  //         comp.event = response.data
+  //       })
+  //     })
+  //     .catch(error => {
+  //       console.log(error)
+  //       if (error.response && error.response.status == 404) {
+  //         next({
+  //           name: '404Resource',
+  //           params: { resource: 'event' }
+  //         })
+  //       } else {
+  //         next({ name: 'NetworkError' })
+  //       }
+  //     })
+  // }
 }
 </script>
