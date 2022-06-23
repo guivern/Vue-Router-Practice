@@ -23,7 +23,7 @@
 <script>
 import EventCard from '@/components/EventCard.vue'
 import EventService from '@/services/EventService.js'
-import { watchEffect } from '@vue/runtime-core'
+import nprogress from 'nprogress'
 
 export default {
   name: 'EventList',
@@ -42,22 +42,46 @@ export default {
       totalEvents: 0
     }
   },
-  created() {
-    // cuando un componente se llama a si mismo vue lo reutiliza, por esto, el metodo created solo se ejecuta la primera vez
-    // watch effect permite que se ejecute el createad cada vez que page es modificado mediante reactividad
-    // la otra forma para volver a ejecutar el created cuando se llama al mismo componente es: <router-view :key="$route.fullPath" />
-    watchEffect(() => {
-      this.events = null
-      EventService.getEvents(2, this.page)
-        .then(response => {
-          this.events = response.data
-          this.totalEvents = response.headers['x-total-count']
+  beforeRouteEnter(routeTo, routeFrom, next) {
+    // called when a route is entered from a different one
+    // here we have not access to 'this'
+    nprogress.start()
+    return EventService.getEvents(2, parseInt(routeTo.query.page) || 1)
+      .then(response => {
+        next(comp => {
+          // here we have access to the component 'comp'
+          comp.events = response.data
+          comp.totalEvents = response.headers['x-total-count']
         })
-        .catch(error => {
-          console.log(error)
-          this.$router.push({ name: 'NetworkError' })
-        })
-    })
+      })
+      .catch(error => {
+        console.log(error)
+        next({ name: 'NetworkError' })
+      })
+      .finally(() => {
+        nprogress.done()
+      })
+  },
+  beforeRouteUpdate(routeTo) {
+    // called when route changes, but the component has not
+    // here we have access to 'this'
+    // use case: we have to reuse the same component
+    nprogress.start()
+    EventService.getEvents(2, parseInt(routeTo.query.page) || 1)
+      .then(response => {
+        this.events = response.data
+        this.totalEvents = response.headers['x-total-count']
+      })
+      .catch(error => {
+        console.log(error)
+        return { name: 'NetworkError' }
+      })
+      .finally(() => {
+        nprogress.done()
+      })
+  },
+  beforeRouteLeave() {
+    // called when route is navigated away from
   },
   computed: {
     hasNextPage() {
