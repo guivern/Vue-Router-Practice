@@ -51,7 +51,7 @@ export default {
     // called when a route is entered from a different one
     // here we have not access to 'this'
     // return a promise if you require that vue-router wait for the API call
-    return EventService.getEvents(2, parseInt(routeTo.query.page) || 1)
+    return EventService.getEvents(4, parseInt(routeTo.query.page) || 1)
       .then(response => {
         next(comp => {
           // here we have access to the component 'comp'
@@ -69,7 +69,7 @@ export default {
     // here we have access to 'this'
     // use case: we have to reuse the same component
     // return a promise if you require that vue-router wait for the API call
-    return EventService.getEvents(2, parseInt(routeTo.query.page) || 1)
+    return EventService.getEvents(4, parseInt(routeTo.query.page) || 1)
       .then(response => {
         this.events = response.data
         this.totalEvents = response.headers['x-total-count']
